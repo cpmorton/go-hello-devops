@@ -57,7 +57,7 @@ services:
       - GIT_USER_NAME=${GIT_USER_NAME:-Your Name}
       - GIT_USER_EMAIL=${GIT_USER_EMAIL:-you@example.com}
       # If you want to use Claude CLI, uncomment and set your API key:
-      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     # Mount the current project directory into the devops-coderbox workspace
     # This means when you edit files in the IDE, you're editing the actual
     # project files on your host machine
