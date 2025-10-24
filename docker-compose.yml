@@ -1,0 +1,83 @@
+# Docker Compose configuration for go-hello-devops
+# This file defines how to run both your application and the development environment
+# together. Compose makes it easy to start multiple containers with a single command.
+
+version: '3.8'
+
+services:
+  # The 'app' service runs your actual Go web application
+  # This demonstrates the separation between the application itself and the
+  # development environment. Your app runs in its own container independent
+  # of the IDE.
+  app:
+    # We build the app from the Dockerfile in this directory
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    # Map port 8000 in the container to port 8000 on your host machine
+    # This means you can access the app at http://localhost:8000
+    ports:
+      - "8000:8000"
+    # Set environment variables for the application
+    environment:
+      - PORT=8000
+    # Restart the container if it crashes
+    # In production, you'd use "always", but for development "unless-stopped" is better
+    # because it won't restart when you deliberately stop it
+    restart: unless-stopped
+    # Container name for easy reference
+    container_name: hello-devops-app
+    # Mount the current directory into the container
+    # This allows hot-reloading if you set up a file watcher
+    volumes:
+      - .:/app
+    # Health check to verify the app is running correctly
+    # Docker will periodically hit this endpoint and mark the container as unhealthy
+    # if it doesn't respond correctly
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # The 'devbox' service runs the devops-coderbox IDE container
+  # This is where you do your actual development work
+  devbox:
+    # Use the pre-built devops-coderbox image from GitHub Container Registry
+    # Once you've forked and customized devops-coderbox, change this to your own image
+    image: ghcr.io/cpmorton/devops-coderbox:latest
+    # Map port 8080 in the container to port 8080 on your host machine
+    # Access the IDE at http://localhost:8080
+    ports:
+      - "8080:8080"
+    # Set up environment variables
+    # Replace these with your own values or pass them from your shell
+    environment:
+      - GIT_USER_NAME=${GIT_USER_NAME:-Your Name}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-you@example.com}
+      # If you want to use Claude CLI, uncomment and set your API key:
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    # Mount the current project directory into the devops-coderbox workspace
+    # This means when you edit files in the IDE, you're editing the actual
+    # project files on your host machine
+    volumes:
+      - .:/home/coder/workspace
+      # Optionally mount your SSH keys for git operations
+      # Uncomment this if you want to use SSH for git push/pull
+      # - ~/.ssh:/home/coder/.ssh:ro
+    restart: unless-stopped
+    container_name: hello-devops-devbox
+    # Run as the coder user (not root) for security
+    user: coder
+    # Keep stdin open and allocate a pseudo-TTY so you can attach to the container
+    # and use the shell if needed
+    stdin_open: true
+    tty: true
+
+# Networks are created automatically by Docker Compose
+# Both containers will be on the same network, so they can communicate with each other
+# by using the service name (e.g., the devbox can reach the app at http://app:8000)
+networks:
+  default:
+    name: hello-devops-network
