@@ -34,6 +34,7 @@ vendor/
 Thumbs.db
 
 # Environment variables and secrets
+# CRITICAL: Never commit .env files with secrets!
 .env
 .env.local
 *.key

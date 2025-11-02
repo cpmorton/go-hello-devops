@@ -1,69 +1,204 @@
-# Go Hello DevOps - Your First Web Application
+# go-hello-devops
 
-This is a simple Go web application designed as a learning project for DevOps engineers and systems administrators who want to learn modern software development practices. The application itself is intentionally simple (it serves a "Hello World" page), but the infrastructure around it demonstrates professional development patterns you'll use in real projects.
+A simple Go web application designed for DevOps engineers learning software development. The app demonstrates professional patterns like HTTP routing, middleware, JSON APIs, testing, and containerization.
 
-## What You'll Learn
+## Table of Contents
 
-This project teaches you how to build, test, containerize, and develop web applications using modern tools and patterns. By working through this project, you'll gain hands-on experience with Go programming, Docker containers, test-driven development, and browser-based development environments. The code is heavily commented to explain not just what each piece does, but why it's structured that way and what patterns it demonstrates.
+- [What Is This?](#what-is-this)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
+- [Development Workflow](#development-workflow)
+- [Adding Your First Feature](#adding-your-first-feature)
+- [Understanding the Code](#understanding-the-code)
+- [Common Commands](#common-commands)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+
+## What Is This?
+
+This project teaches you modern development practices through a simple but professionally-structured Go web application. The app itself just serves "Hello World" pages and basic APIs, but the infrastructure around it demonstrates:
+
+- **HTTP routing and handlers** - How web servers work in Go
+- **Middleware patterns** - Adding behavior to handlers
+- **JSON APIs** - Building and testing API endpoints
+- **Test-driven development** - Writing tests alongside code
+- **Containerization** - Docker multi-stage builds
+- **Docker Compose** - Orchestrating multiple containers
+- **Development environments** - Browser-based IDE with your project
+
+The code is heavily commented to explain not just what things do, but why they're structured that way.
 
 ## Quick Start
 
-The fastest way to get started is using Docker Compose, which orchestrates both your application and your development environment in a single command. This requires that you have Docker Desktop (or Docker and Docker Compose) installed on your system.
+**Requirements:** Docker Engine installed and running (see [Prerequisites](#prerequisites))
 
-First, clone this repository to your local machine. Navigate to wherever you keep your projects and run these commands:
-
+1. Clone this repository:
 ```bash
-git clone https://github.com/cpmorton/go-hello-devops.git
+git clone https://github.com/yourusername/go-hello-devops.git
 cd go-hello-devops
 ```
 
-Now start the development environment with a single command:
-
+2. Configure environment variables:
 ```bash
-docker-compose up
+# Copy the example file
+cp .env.example .env
+
+# Edit .env with your actual values
+# At minimum, you MUST set:
+#   - GITHUB_USERNAME (your GitHub username)
+#   - GIT_USER_NAME (your name for git commits)
+#   - GIT_USER_EMAIL (your email for git commits)
+#   - ANTHROPIC_API_KEY (get from https://console.anthropic.com)
+#   - CODE_SERVER_PASSWORD (optional, defaults to devops-coderbox)
+nano .env
 ```
 
-This command starts two containers. The first container runs your actual Go web application, which you can access at http://localhost:8000 in your browser. The second container runs devops-coderbox, which is a browser-based IDE (essentially VS Code running in a container) that you can access at http://localhost:8080. The default password for the IDE is `devops-coderbox`.
+3. Start everything:
+```bash
+docker compose up
+```
 
-When you open the IDE, you'll see the project files already loaded. You can edit the code, and because the project directory is mounted into both containers, your changes are immediately visible. Try editing the message in main.go and save the file, then restart the app container to see your changes.
+The containers will fail to start if required environment variables aren't set.
 
-To stop the environment, press Ctrl+C in the terminal where docker-compose is running, or run `docker-compose down` from another terminal in the same directory.
+4. Open two browser tabs:
+   - http://localhost:8000 - Your application
+   - http://localhost:8080 - Your IDE (use the password from your .env file)
 
-## What's Included
+5. Make changes in the IDE, save files, and restart to see changes:
+```bash
+# In another terminal
+docker compose restart app
+```
 
-This project includes everything you need to start learning web development with Go. The main application file demonstrates how to build HTTP servers with proper routing, middleware, and JSON API endpoints. The test file shows you how to write unit tests and benchmarks for your HTTP handlers, which is an essential skill for building reliable software. The Dockerfile shows you how to containerize Go applications using multi-stage builds, which results in small, efficient container images. The docker-compose configuration demonstrates how to orchestrate multiple containers and manage their interactions.
+## Prerequisites
 
-The Makefile provides convenient commands for common development tasks like building, testing, and running your application. You can see all available commands by running `make help` from the project directory.
+You need Docker Engine (not Docker Desktop) to run this project. Docker Desktop has licensing restrictions for large companies.
+
+### Installing Docker Engine on WSL2 (Windows)
+
+If you're on Windows, install WSL2 first:
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+Restart, then open your Ubuntu terminal and install Docker Engine:
+
+```bash
+# Update and install prerequisites
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+# Add Docker's GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add Docker repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker Engine
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Start Docker and add yourself to docker group
+sudo service docker start
+sudo usermod -aG docker $USER
+```
+
+Close and reopen your terminal, then verify:
+```bash
+docker run hello-world
+```
+
+**Note:** Each time you open a new WSL2 terminal, run `sudo service docker start`.
+
+### Other Platforms
+
+**Linux:** Install Docker Engine from your package manager (see Docker's docs for your distro)
+
+**macOS:** Install Docker Desktop from docker.com (free for small companies, educational use, and personal projects)
 
 ## Project Structure
 
-Let me walk you through the important files in this project and explain what each one does.
+```
+go-hello-devops/
+├── main.go              # Application code - read this first
+├── main_test.go         # Tests - demonstrates testing patterns
+├── go.mod              # Go module definition
+├── Dockerfile.app      # How to containerize the app
+├── docker-compose.yml  # Orchestrates app + IDE
+├── .env.example        # Template for environment variables
+├── .env               # Your actual environment variables (DO NOT COMMIT)
+├── Makefile           # Convenient command shortcuts
+└── README.md          # This file
+```
 
-**main.go** is your application code. This file defines the HTTP server, the routes it responds to, and the handlers that process those requests. The code is heavily commented to explain Go's patterns for web development. You'll find examples of serving HTML, returning JSON from APIs, implementing middleware, and configuring HTTP servers with proper timeouts.
+**Start by reading `main.go`** - it's heavily commented to teach you Go web development patterns.
 
-**main_test.go** contains tests for your application. These tests demonstrate how to write unit tests for HTTP handlers using Go's httptest package. The tests verify that your handlers return the correct status codes, headers, and response bodies. There are also benchmark functions that measure how fast your handlers execute, which is useful when you're optimizing performance.
+## Environment Variables
 
-**go.mod** defines this project as a Go module and lists its dependencies. Since this application only uses Go's standard library, there are no external dependencies listed yet. As you add third-party packages, they'll automatically be recorded here when you run `go mod tidy`.
+This project requires several environment variables. Create a `.env` file based on `.env.example`:
 
-**Dockerfile.app** is a multi-stage Dockerfile that builds your Go application into a container image. The first stage compiles your code, and the second stage creates a minimal runtime image with just your binary and the certificates needed for HTTPS. This pattern results in container images that are only about 10-15 MB instead of hundreds of megabytes.
+```bash
+cp .env.example .env
+```
 
-**docker-compose.yml** orchestrates multiple containers together. In this project, it runs both your application and the devops-coderbox development environment, with the appropriate networking and volume mounts configured. This is how you'd typically run complex applications that need multiple services (databases, caches, background workers, etc).
+**Required variables:**
 
-**Makefile** defines common development tasks as simple commands. Instead of remembering long docker commands or complicated test flags, you can just run `make test` or `make build`. The Makefile documents all available commands if you run `make help`.
+- `GITHUB_USERNAME` - Your GitHub username (for pulling the devops-coderbox image)
+- `GIT_USER_NAME` - Your name for git commits (e.g., "John Smith")
+- `GIT_USER_EMAIL` - Your email for git commits (e.g., "john@example.com")
+- `ANTHROPIC_API_KEY` - Your Anthropic API key from https://console.anthropic.com
+
+**Optional variables:**
+
+- `CODE_SERVER_PASSWORD` - IDE password (defaults to "devops-coderbox")
+
+Docker Compose will fail with a clear error message if required variables are missing.
+
+**Security note:** The `.env` file is in `.gitignore` and should NEVER be committed to git. It contains your API key and other secrets.
 
 ## Development Workflow
 
-The typical development workflow looks like this. You start the development environment with `docker-compose up`, which launches both your application and the IDE. You open the IDE in your browser at http://localhost:8080 and authenticate with the password `devops-coderbox`. You open the main.go file in the IDE and make some changes to the code. You save the file, and your changes are immediately written to your local filesystem because the project directory is mounted into the container.
+Your typical workflow looks like this:
 
-To see your changes in action, you need to restart the application container. You can do this by pressing Ctrl+C in the terminal where docker-compose is running, then running `docker-compose up` again. Alternatively, in another terminal, you can run `docker-compose restart app` to restart just the application container without restarting the IDE.
+1. **Start the environment:**
+```bash
+docker compose up
+```
 
-As you're making changes, you should frequently run the tests to verify that your changes don't break existing functionality. You can run tests from inside the IDE's terminal (open Terminal from the menu) by typing `go test -v ./...`, or you can use the Makefile with `make test`. The tests will show you immediately if something is broken, which saves you from discovering problems much later.
+2. **Open the IDE** at http://localhost:8080 (password: `devops-coderbox`)
 
-## Writing Your First Feature
+3. **Edit code** in the IDE and save files
 
-Let's walk through adding a new feature to the application. This will help you understand the development cycle and get comfortable with the tools.
+4. **Run tests** in the IDE's integrated terminal (Ctrl+` to open):
+```bash
+go test -v ./...
+```
 
-Open the IDE at http://localhost:8080 and navigate to main.go. Let's add a new API endpoint that returns the current time in different time zones. First, add a new struct type after the existing response types, around line 20:
+5. **See your changes** by restarting the app:
+```bash
+docker compose restart app
+```
+
+6. **Commit your changes:**
+```bash
+git add .
+git commit -m "Describe what you changed and why"
+git push
+```
+
+## Adding Your First Feature
+
+Let's add a new API endpoint that returns the current time. This demonstrates the full development cycle.
+
+### Step 1: Define the Response Structure
+
+Open `main.go` in the IDE. After the existing response types (around line 20), add:
 
 ```go
 type TimeResponse struct {
@@ -73,11 +208,15 @@ type TimeResponse struct {
 }
 ```
 
-This defines the structure of our JSON response. Now add a new handler function after the existing handlers, around line 120:
+### Step 2: Implement the Handler
+
+After the existing handlers (around line 120), add:
 
 ```go
 func handleTime(w http.ResponseWriter, r *http.Request) {
+    // This endpoint returns the current time in multiple formats
     now := time.Now()
+    
     response := TimeResponse{
         UTC:       now.UTC().Format(time.RFC3339),
         LocalTime: now.Format(time.RFC3339),
@@ -93,13 +232,17 @@ func handleTime(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-This handler creates a TimeResponse with the current time in different formats and returns it as JSON. Now register this handler with the router by adding this line in the main function where the other handlers are registered, around line 170:
+### Step 3: Register the Route
+
+In the `main()` function, where other routes are registered (around line 170), add:
 
 ```go
 mux.HandleFunc("/api/time", loggingMiddleware(handleTime))
 ```
 
-Save the file. Now you need to write a test for your new handler. Open main_test.go and add this test function:
+### Step 4: Write Tests
+
+Open `main_test.go` and add:
 
 ```go
 func TestHandleTime(t *testing.T) {
@@ -127,87 +270,223 @@ func TestHandleTime(t *testing.T) {
 }
 ```
 
-Save the test file. Now run the tests from the IDE's terminal with `go test -v ./...` and verify that all tests pass, including your new one. Restart the application container with `docker-compose restart app`, then visit http://localhost:8000/api/time in your browser to see your new endpoint in action.
+### Step 5: Test and Run
 
-Congratulations! You just added a feature using proper development practices. You wrote the code, added tests to verify it works, and confirmed it works in the running application. This is the cycle you'll follow for every feature you build.
+In the IDE terminal:
+
+```bash
+# Run tests
+go test -v ./...
+
+# All tests should pass
+```
+
+Restart the app:
+
+```bash
+docker compose restart app
+```
+
+Visit http://localhost:8000/api/time in your browser to see your new endpoint in action.
+
+Congratulations! You just added a feature using test-driven development.
 
 ## Understanding the Code
 
-Let me explain some key concepts that appear in this codebase, because understanding these patterns will help you as you start modifying and extending the application.
+### HTTP Handlers
 
-**HTTP Handlers** are functions that process HTTP requests. In Go, a handler has the signature `func(w http.ResponseWriter, r *http.Request)`. The `w` parameter is where you write your response (headers and body), and the `r` parameter contains information about the incoming request (URL, headers, form data, etc). Every endpoint in your application is implemented as a handler function.
+Handlers are functions that process HTTP requests:
 
-**Middleware** is a pattern for wrapping handlers with additional functionality. The loggingMiddleware in this application wraps every handler to log information about requests. Middleware is how you implement cross-cutting concerns like authentication, rate limiting, or request logging without duplicating code in every handler. Middleware functions take a handler as input and return a new handler that adds some behavior before or after calling the original handler.
+```go
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+    // w is where you write your response
+    // r contains information about the incoming request
+}
+```
 
-**JSON Encoding** is how you convert Go structs into JSON for API responses. The `json.NewEncoder(w).Encode(response)` pattern takes a Go struct and writes it to the response writer as JSON. The struct tags like `json:"status"` control what the fields are named in the JSON output. This is the standard pattern for building JSON APIs in Go.
+Every endpoint in the application is a handler function.
 
-**Test-Driven Development** is the practice of writing tests for your code before or immediately after writing the code itself. The tests in main_test.go verify that your handlers work correctly by simulating HTTP requests and checking the responses. When you modify your code, running the tests immediately tells you if you broke something. This gives you confidence to make changes and refactor code without fear.
+### Middleware
 
-**Struct Tags** are the backtick strings you see after struct fields, like `json:"status"`. These tags provide metadata about the fields that other packages can read. The json package uses these tags to control how structs are encoded to and decoded from JSON. Tags are Go's way of adding annotations to struct fields.
+Middleware wraps handlers to add behavior. The `loggingMiddleware` logs information about every request:
 
-## Common Development Tasks
+```go
+func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // Code here runs before the handler
+        next(w, r)  // Call the actual handler
+        // Code here runs after the handler
+    }
+}
+```
 
-Here are the commands you'll use most frequently during development, along with explanations of what they do and when you'd use them.
+This pattern is how you implement authentication, rate limiting, or any cross-cutting concern.
 
-**make dev** starts the full development environment with both the application and the IDE. This is typically the first command you run when starting your work session. It keeps the terminal attached so you can see logs from both containers.
+### JSON APIs
 
-**make dev-detached** starts the environment in the background, which frees up your terminal for other commands. You'd use this when you want the services running but don't need to watch the logs. Use `make stop` to stop services started this way.
+To return JSON, create a struct with json tags:
 
-**make test** runs all your tests. You should run this frequently as you're making changes to verify that everything still works. The tests run quickly, so there's no excuse not to run them often.
+```go
+type Response struct {
+    Message string `json:"message"`
+}
 
-**make test-coverage** generates an HTML report showing which lines of your code are covered by tests. This helps you identify areas that need more testing. Open coverage.html in your browser after running this command.
+response := Response{Message: "Hello"}
+w.Header().Set("Content-Type", "application/json")
+json.NewEncoder(w).Encode(response)
+```
 
-**make logs** shows the logs from your running containers. This is useful when you've started the environment in detached mode but want to see what's happening.
+### Testing
 
-**make stop** stops all running containers. You'd use this when you're done working or when you need to free up the ports for something else.
+Tests use the `httptest` package to simulate HTTP requests:
 
-## Deploying to Azure (Future Enhancement)
+```go
+func TestHandler(t *testing.T) {
+    req := httptest.NewRequest(http.MethodGet, "/", nil)
+    rec := httptest.NewRecorder()
+    
+    handleRoot(rec, req)
+    
+    if rec.Code != http.StatusOK {
+        t.Errorf("Expected 200, got %d", rec.Code)
+    }
+}
+```
 
-This section is a placeholder for future work. Eventually, you'll add CI/CD pipelines that automatically build your container images and deploy them to Azure Container Apps or Azure Kubernetes Service. The deployment process will include automated testing, security scanning, and blue-green deployments to minimize downtime.
+Run tests frequently as you develop to catch issues early.
 
-For now, focus on learning Go, writing tests, and building features. The deployment infrastructure will come later as you become more comfortable with the development workflow.
+## Common Commands
+
+Using Make (convenient shortcuts):
+
+```bash
+make help          # Show all available commands
+make dev           # Start development environment
+make test          # Run tests
+make test-coverage # Generate coverage report
+make stop          # Stop all containers
+```
+
+Using Docker Compose directly:
+
+```bash
+docker compose up              # Start everything
+docker compose down            # Stop and remove containers
+docker compose restart app     # Restart just the app
+docker compose logs -f         # Watch logs
+```
+
+Using Go directly (inside the IDE terminal):
+
+```bash
+go run .                       # Run without Docker
+go test -v ./...              # Run all tests
+go test -cover ./...          # Run tests with coverage
+go fmt ./...                  # Format code
+go build -o bin/server .      # Build binary
+```
+
+## Testing
+
+This project emphasizes test-driven development. The test file (`main_test.go`) demonstrates:
+
+- **Unit testing handlers** - Verify each endpoint works correctly
+- **Testing JSON APIs** - Parse and validate JSON responses
+- **Testing middleware** - Ensure middleware calls handlers correctly
+- **Benchmarking** - Measure handler performance
+
+### Running Tests
+
+```bash
+# Run all tests
+go test -v ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Generate HTML coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out -o coverage.html
+# Open coverage.html in your browser
+
+# Run benchmarks
+go test -bench=. ./...
+```
+
+### Writing Tests
+
+Follow this pattern:
+
+```go
+func TestHandleThing(t *testing.T) {
+    // Create fake request
+    req := httptest.NewRequest(http.MethodGet, "/thing", nil)
+    rec := httptest.NewRecorder()
+    
+    // Call handler
+    handleThing(rec, req)
+    
+    // Verify response
+    if rec.Code != http.StatusOK {
+        t.Errorf("Expected 200, got %d", rec.Code)
+    }
+}
+```
 
 ## Troubleshooting
 
-If you encounter issues, here are some common problems and their solutions.
+**Changes don't appear when I refresh the browser:**
+- Go is a compiled language. You must rebuild the app container.
+- Run: `docker compose restart app`
+- Wait for the container to restart, then refresh your browser.
 
-**The IDE won't load at localhost:8080.** Verify that the devbox container is running by executing `docker ps` and looking for a container named hello-devops-devbox. If it's not running, check the docker-compose logs with `make logs` to see if there are any error messages. Make sure no other service is using port 8080 on your machine.
+**"Port already in use" error:**
+- Something else is using ports 8000 or 8080
+- Stop other services or change ports in `docker-compose.yml`
 
-**The application returns 404 for all requests.** This usually means the app container isn't running or didn't start correctly. Run `docker ps` to verify the hello-devops-app container is running. Check the logs with `make logs` and look for error messages during startup.
+**Tests fail after making changes:**
+- Read the test output carefully - it tells you what's wrong
+- Common issue: changed response structure but didn't update tests
+- Fix: Update tests to match your new code
 
-**Changes to the code don't appear when I refresh the browser.** Remember that Go is a compiled language, so you need to rebuild and restart the application for changes to take effect. The easiest way is to restart the app container with `docker-compose restart app`. You don't need to restart the IDE container.
+**IDE won't load at localhost:8080:**
+- Is Docker running? Check with `docker ps`
+- Is the devbox container running? Should see `hello-devops-devbox` in `docker ps`
+- Try http://127.0.0.1:8080 instead of localhost:8080
 
-**Tests fail with unexpected errors.** First, make sure your code compiles by running `go build .` from the IDE terminal. If there are compilation errors, fix those first. If the code compiles but tests fail, read the test output carefully. It will tell you which test failed and what the actual vs expected values were.
+**"go: command not found" in IDE terminal:**
+- The devbox container includes Go. Make sure you're in the container's terminal.
+- In code-server, open the integrated terminal with Ctrl+`
 
-**Docker commands fail with permission errors.** On Linux, you need to add your user to the docker group. Run `sudo usermod -aG docker $USER`, then log out and back in. On Windows and Mac with Docker Desktop, make sure Docker Desktop is running.
+**Docker says "permission denied":**
+- On Linux/WSL2, did you add yourself to the docker group?
+- Run: `sudo usermod -aG docker $USER`
+- Then log out and back in
+
+**WSL2: "Cannot connect to Docker daemon":**
+- Docker isn't running. Start it: `sudo service docker start`
+- You need to run this command each time you open a new WSL2 terminal
 
 ## Next Steps
 
-Once you're comfortable with this basic application, here are some ideas for extending it and continuing your learning.
+Once you're comfortable with the basics:
 
-Add a database to store data. You'd add a Postgres container to docker-compose.yml and modify your Go code to connect to it and store data. This teaches you about database integration and connection management.
+1. **Add more features** - Implement new endpoints, add a database, handle file uploads
+2. **Learn about authentication** - Add login/logout endpoints with session management
+3. **Explore concurrency** - Use goroutines and channels for background tasks
+4. **Set up CI/CD** - Add GitHub Actions to automatically test and deploy
+5. **Deploy to the cloud** - Run your app in Azure, AWS, or another cloud provider
 
-Implement user authentication. Add login and registration endpoints, store user credentials securely (hashed passwords), and protect certain endpoints so they require authentication. This teaches you about security and session management.
-
-Add a frontend framework. Create a React or Vue frontend that calls your API endpoints. This teaches you about building full-stack applications and dealing with CORS.
-
-Set up CI/CD pipelines. Add GitHub Actions workflows that run your tests automatically when you push code, build container images, and deploy to Azure. This teaches you about automated deployment pipelines.
-
-Add monitoring and observability. Integrate Prometheus metrics and structured logging to monitor your application's health and performance. This teaches you about production operations.
-
-The goal isn't to build a real product right now. The goal is to learn the patterns and practices that professional developers use, so that when you do need to build something real, you'll know how to do it properly.
+The goal isn't to build a complex application immediately. The goal is to learn patterns and practices that scale from simple learning projects to production systems.
 
 ## Resources
 
-Go's official documentation is excellent and should be your first stop for learning about language features. The Go Tour at tour.golang.org provides an interactive introduction to the language. The standard library documentation at pkg.go.dev shows you what's available and how to use it.
+- [Go Tour](https://go.dev/tour/) - Interactive introduction to Go
+- [Go by Example](https://gobyexample.com/) - Learn Go through annotated example programs
+- [Effective Go](https://go.dev/doc/effective_go) - Go best practices
+- [Go standard library](https://pkg.go.dev/std) - Everything included with Go
 
-For learning about web development in Go specifically, check out Let's Go by Alex Edwards, which is a practical guide to building web applications. The book covers routing, middleware, databases, authentication, and testing in detail.
-
-For Docker and containers, Docker's official documentation is comprehensive. Pay particular attention to the best practices guide for writing Dockerfiles and the Compose documentation for orchestrating multiple containers.
-
-## Contributing
-
-If you find issues with this project or have suggestions for improvements, please open an issue or submit a pull request on GitHub. This is a teaching project, so clarity and educational value are more important than complexity or completeness.
+---
 
 ## License
 
