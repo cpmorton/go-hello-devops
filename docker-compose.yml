@@ -44,24 +44,25 @@ services:
   # The 'devbox' service runs the devops-coderbox IDE container
   # This is where you do your actual development work
   devbox:
-    # Use the pre-built devops-coderbox image from GitHub Container Registry
-    # Once you've forked and customized devops-coderbox, change this to your own image
-    image: ghcr.io/cpmorton/devops-coderbox:latest
-    # Map port 8080 in the container to port 8080 on your host machine
-    # Access the IDE at http://localhost:8080
+
+    image: ghcr.io/${GITHUB_USERNAME:-cpmorton}/devops-coderbox:latest
     ports:
       - "8080:8080"
     # Set up environment variables
-    # Replace these with your own values or pass them from your shell
+    # These must be set in your shell environment or .env file
     environment:
-      - GIT_USER_NAME=${GIT_USER_NAME:-Your Name}
-      - GIT_USER_EMAIL=${GIT_USER_EMAIL:-you@example.com}
-      # If you want to use Claude CLI, uncomment and set your API key:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    # Mount the current project directory into the devops-coderbox workspace
-    # This means when you edit files in the IDE, you're editing the actual
-    # project files on your host machine
+      # Git configuration - REQUIRED
+      - GIT_USER_NAME=${GIT_USER_NAME:?GIT_USER_NAME must be set}
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL:?GIT_USER_EMAIL must be set}
+      
+      # Claude Code API key - REQUIRED
+      # Get your key from https://console.anthropic.com
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY must be set}
+      
+      # IDE password - REQUIRED
+      - CODE_SERVER_PASSWORD=${CODE_SERVER_PASSWORD:?CODE_SERVER_PASSWORD must be set}
     volumes:
+      # CWD:
       - .:/home/coder/workspace
       # Optionally mount your SSH keys for git operations
       # Uncomment this if you want to use SSH for git push/pull
