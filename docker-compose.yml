@@ -63,7 +63,14 @@ services:
       - CODE_SERVER_PASSWORD=${CODE_SERVER_PASSWORD:?CODE_SERVER_PASSWORD must be set}
     volumes:
       # CWD:
+<<<<<<< Updated upstream
       - .:/home/coder/workspace
+=======
+      - .:/home/coder/workspace:z
+      # Retain claude subscription info in workspace...
+      - .claude:/home/coder/.claude:z
+      - .claude/.claude.json:/home/coder/.claude.json:z
+>>>>>>> Stashed changes
       # Optionally mount your SSH keys for git operations
       # Uncomment this if you want to use SSH for git push/pull
       # - ~/.ssh:/home/coder/.ssh:ro

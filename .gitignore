@@ -40,5 +40,8 @@ Thumbs.db
 *.key
 *.pem
 
+# Claude.ai
+#.claude/
+
 # Log files
 *.log
