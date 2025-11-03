@@ -30,7 +30,7 @@ services:
     # Mount the current directory into the container
     # This allows hot-reloading if you set up a file watcher
     volumes:
-      - .:/app
+      - .:/app:z
     # Health check to verify the app is running correctly
     # Docker will periodically hit this endpoint and mark the container as unhealthy
     # if it doesn't respond correctly
@@ -55,15 +55,17 @@ services:
       - GIT_USER_NAME=${GIT_USER_NAME:?GIT_USER_NAME must be set}
       - GIT_USER_EMAIL=${GIT_USER_EMAIL:?GIT_USER_EMAIL must be set}
       
-      # Claude Code API key - REQUIRED
+      # Claude Code API key - OPTIONAL - do not use if you have a subscription
       # Get your key from https://console.anthropic.com
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY must be set}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       
       # IDE password - REQUIRED
       - CODE_SERVER_PASSWORD=${CODE_SERVER_PASSWORD:?CODE_SERVER_PASSWORD must be set}
     volumes:
       # CWD:
-      - .:/home/coder/workspace
+      - .:/home/coder/workspace:z
+        # Claude Oauth Config - if set, mount it...
+      - ${CLAUDE_JSON:-'/dev/null'}:${CLAUDE_JSON_CONTAINERPATH:-'/tmp/.devnull'}:z
       # Optionally mount your SSH keys for git operations
       # Uncomment this if you want to use SSH for git push/pull
       # - ~/.ssh:/home/coder/.ssh:ro

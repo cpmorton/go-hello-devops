@@ -49,7 +49,6 @@ cp .env.example .env
 #   - GITHUB_USERNAME (your GitHub username)
 #   - GIT_USER_NAME (your name for git commits)
 #   - GIT_USER_EMAIL (your email for git commits)
-#   - ANTHROPIC_API_KEY (get from https://console.anthropic.com)
 #   - CODE_SERVER_PASSWORD (optional, defaults to devops-coderbox)
 nano .env
 ```
@@ -57,6 +56,8 @@ nano .env
 3. Start everything:
 ```bash
 docker compose up
+# Or, podman:
+podman-compose --pod-args '--userns keep-id' up
 ```
 
 The containers will fail to start if required environment variables aren't set.
@@ -73,9 +74,11 @@ docker compose restart app
 
 ## Prerequisites
 
-You need Docker Engine (not Docker Desktop) to run this project. Docker Desktop has licensing restrictions for large companies.
+### Docker:
+You need Docker Engine (preferred to Docker Desktop) to run this project. Docker Desktop has licensing restrictions for large companies.
+Optionally, you may wish to use podman with podman-compose...
 
-### Installing Docker Engine on WSL2 (Windows)
+#### Installing Docker Engine on WSL2 (Windows)
 
 If you're on Windows, install WSL2 first:
 
@@ -116,9 +119,9 @@ docker run hello-world
 
 **Note:** Each time you open a new WSL2 terminal, run `sudo service docker start`.
 
-### Other Platforms
+#### Other Platforms
 
-**Linux:** Install Docker Engine from your package manager (see Docker's docs for your distro)
+**Linux:** Install Docker Engine  or podman and podman-compose from your package manager (see Docker's docs for your distro)
 
 **macOS:** Install Docker Desktop from docker.com (free for small companies, educational use, and personal projects)
 
@@ -152,11 +155,11 @@ cp .env.example .env
 - `GITHUB_USERNAME` - Your GitHub username (for pulling the devops-coderbox image)
 - `GIT_USER_NAME` - Your name for git commits (e.g., "John Smith")
 - `GIT_USER_EMAIL` - Your email for git commits (e.g., "john@example.com")
-- `ANTHROPIC_API_KEY` - Your Anthropic API key from https://console.anthropic.com
 
 **Optional variables:**
 
 - `CODE_SERVER_PASSWORD` - IDE password (defaults to "devops-coderbox")
+- `ANTHROPIC_API_KEY` - Your Anthropic API key from https://console.anthropic.com (do not use if you have a pro or max subscription)
 
 Docker Compose will fail with a clear error message if required variables are missing.
 
@@ -169,6 +172,8 @@ Your typical workflow looks like this:
 1. **Start the environment:**
 ```bash
 docker compose up
+# Or, if you use podman:
+podman-compose --pod-args '--userns keep-id' up
 ```
 
 2. **Open the IDE** at http://localhost:8080 (password: `devops-coderbox`)
@@ -374,6 +379,15 @@ docker compose up              # Start everything
 docker compose down            # Stop and remove containers
 docker compose restart app     # Restart just the app
 docker compose logs -f         # Watch logs
+```
+
+Or, using Podman Compose directly:
+
+```bash
+podman-compose  --pod-args '--userns keep-id' up    # Start everything
+podman-compose down                                 # Stop and remove containers
+podman-compose restart app                          # Restart just the app
+podman-compose logs -f                              # Watch logs
 ```
 
 Using Go directly (inside the IDE terminal):
