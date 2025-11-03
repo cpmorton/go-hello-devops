@@ -41,7 +41,8 @@ Thumbs.db
 *.pem
 
 # Claude.ai
-#.claude/
+.claude/
+!.claude/.settings.json
 
 # Log files
 *.log
